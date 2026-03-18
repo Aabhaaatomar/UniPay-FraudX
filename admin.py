@@ -29,7 +29,7 @@ def list_users():
     return jsonify({"users": [u.to_dict() for u in users]}), 200
 
 
-# ─────────────────────────────────────────────
+# ────────────────────────────────────────────
 # PUT /api/admin/users/<id>/toggle-active
 # ─────────────────────────────────────────────
 @admin_bp.route("/users/<int:user_id>/toggle-active", methods=["PUT"])

@@ -20,7 +20,7 @@ def _get_known_devices(user_id):
     return {t.device_id for t in txns if t.device_id}
 
 
-# ─────────────────────────────────────────────
+# ────────────────────────────────────────────
 # POST /api/transactions/submit
 # ─────────────────────────────────────────────
 @transactions_bp.route("/submit", methods=["POST"])

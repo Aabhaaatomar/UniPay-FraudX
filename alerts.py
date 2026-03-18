@@ -7,7 +7,7 @@ from flask_socketio import join_room
 alerts_bp = Blueprint("alerts", __name__)
 
 
-# ─────────────────────────────────────────────
+# ────────────────────────────────────────────
 # GET /api/alerts/  — get user's alerts
 # ─────────────────────────────────────────────
 @alerts_bp.route("/", methods=["GET"])

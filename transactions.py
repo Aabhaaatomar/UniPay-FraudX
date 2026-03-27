@@ -76,4 +76,18 @@ def submit_transaction():
 
     db.session.commit()
 
+# Generate alert if suspicious
+    if result["is_fraud"] or result["recommendation"] in ("BLOCK", "FLAG_FOR_REVIEW"):
+        alert_type = "fraud_detected" if result["is_fraud"] else "suspicious"
+        msg = (
+            f"Transaction {tx.transaction_id} of {tx.amount} {tx.currency} "
+            f"flagged. Score: {tx.fraud_score:.2f}. "
+            f"Rules: {', '.join(result['triggered_rules']) or 'None'}."
+        )
+        create_alert(user_id, tx.transaction_id, alert_type, msg)
+
+    return jsonify({
+        "transaction": tx.to_dict(),
+        "fraud_analysis": result,
+    }), 201
 

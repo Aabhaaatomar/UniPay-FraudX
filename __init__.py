@@ -46,3 +46,26 @@ def create_app():
     socketio.init_app(app)
     CORS(app, origins="*")
 
+ # ----------------------------
+    # Register Blueprints
+    # ----------------------------
+    from app.routes.auth import auth_bp
+    from app.routes.transactions import transactions_bp
+    from app.routes.fraud import fraud_bp
+    from app.routes.alerts import alerts_bp
+    from app.routes.admin import admin_bp
+
+    app.register_blueprint(auth_bp, url_prefix="/api/auth")
+    app.register_blueprint(transactions_bp, url_prefix="/api/transactions")
+    app.register_blueprint(fraud_bp, url_prefix="/api/fraud")
+    app.register_blueprint(alerts_bp, url_prefix="/api/alerts")
+    app.register_blueprint(admin_bp, url_prefix="/api/admin")
+
+    # ----------------------------
+    # Create DB tables
+    # ----------------------------
+    with app.app_context():
+        db.create_all()
+
+    return app
+

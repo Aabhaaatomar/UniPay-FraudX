@@ -55,3 +55,34 @@ def report_fraud():
         "message": "Fraud report submitted",
         "report": report.to_dict(),
     }), 201
+
+
+# ─────────────────────────────────────────────
+# GET /api/fraud/reports  (admin)
+# ─────────────────────────────────────────────
+@fraud_bp.route("/reports", methods=["GET"])
+@jwt_required()
+def list_fraud_reports():
+    _, err = _require_admin()
+    if err:
+        return err
+
+    status_filter = request.args.get("status")
+    page = request.args.get("page", 1, type=int)
+    per_page = request.args.get("per_page", 20, type=int)
+
+    query = FraudReport.query
+    if status_filter:
+        query = query.filter_by(status=status_filter)
+
+    paginated = query.order_by(FraudReport.created_at.desc()).paginate(
+        page=page, per_page=per_page, error_out=False
+    )
+
+    return jsonify({
+        "reports": [r.to_dict() for r in paginated.items],
+        "total": paginated.total,
+        "page": paginated.page,
+        "pages": paginated.pages,
+    }), 200
+

@@ -91,21 +91,6 @@ else:
 
 # 👉 NAVIGATION
 
-page = st.radio(
-    "",
-    ["Home", "Analysis", "Dashboard", "Prediction", "About"],
-    horizontal=True,
-    key="nav"
-)
-
-# 👉 THEME BELOW / SIDE
-theme = st.radio(
-    "",
-    ["🌙", "☀️"],
-    horizontal=True,
-    key="theme_toggle"
-)
-
 nav_col1, nav_col2 = st.columns([6,2])
 
 with nav_col1:
@@ -113,6 +98,11 @@ with nav_col1:
 
 with nav_col2:
     theme = st.radio("", ["🌙", "☀️"], horizontal=True)
+
+if theme == "🌙":
+    theme = "Dark"
+else:   
+    theme = "Light"
 
 # ------------------ LOAD DATA ------------------
 df = pd.read_excel("data.xlsx")

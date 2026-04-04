@@ -105,7 +105,7 @@ model = pickle.load(open("fraud_model.pkl", "rb"))
 
 # ------------------ CUSTOM CSS ------------------
 # 🎨 THEME TOGGLE
-theme = st.radio("Theme", ["Dark", "Light"], horizontal=True)
+theme = st.radio("Theme", ["Dark", "Light"], horizontal=True,key="theme_toggle")
 
 # 🎨 DYNAMIC CSS
 if theme == "Dark":
@@ -143,7 +143,18 @@ if theme == "Dark":
                     border-radius: 12px;
                     padding: 10px;
                     }
+                 
                 /* BUTTON */
+                
+                .stButton > button {
+        background: linear-gradient(90deg, #ff4b8b, #ff6b6b);
+        color: white;
+        border-radius: 10px;
+        padding: 10px 20px;
+        border: none;
+        transition: 0.3s;
+        font-weight: 600;
+    }
                 .stButton > button:hover {
                     transform: scale(1.05);
                     background: linear-gradient(90deg, #ff6b6b, #ff4b8b);

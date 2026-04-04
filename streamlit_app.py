@@ -42,29 +42,56 @@ model = pickle.load(open("fraud_model.pkl", "rb"))
 st.markdown("""
 <style>
 
-/* Background */
-.stApp {
-    background: linear-gradient(135deg, #f5f7fa, #e4e7eb);
+/* -------- REMOVE SIDEBAR -------- */
+section[data-testid="stSidebar"] {
+    display: none;
 }
 
-/* Heading center */
-h1 {
+/* -------- FULL APP DARK BACKGROUND -------- */
+[data-testid="stAppViewContainer"] {
+    background-color: #0e1117;
+}
+
+/* Remove top white header */
+[data-testid="stHeader"] {
+    background: transparent;
+}
+
+/* -------- TEXT STYLING -------- */
+h1, h2, h3, h4, h5, h6 {
+    color: #ffffff !important;
     text-align: center;
 }
 
-/* Button styling */
-.stButton > button {
-    background: linear-gradient(45deg, #6c63ff, #5a55d1);
-    color: white;
-    border-radius: 10px;
-    padding: 10px 20px;
-    border: none;
-    transition: 0.3s;
+p, label, div {
+    color: #e4e6eb !important;
 }
 
-/* Hover effect */
+/* -------- CENTER TOP NAV (RADIO BUTTONS) -------- */
+div[data-testid="stRadio"] > div {
+    flex-direction: row;
+    justify-content: center;
+    gap: 20px;
+}
+
+/* -------- DATAFRAME -------- */
+[data-testid="stDataFrame"] {
+    background-color: #1c1f26;
+    border-radius: 12px;
+    padding: 10px;
+}
+
+/* -------- BUTTON -------- */
+
 .stButton > button:hover {
-    transform: scale(1.05);
+    transform:scale(1.05);
+    background: linear-gradient(90deg, #ff6b6b, #ff4b8b);
+    box-shadow: 0 4px 15px rgba(255,107,107,0.4);
+}
+/* -------- FULL WIDTH CONTENT -------- */
+.block-container {
+    padding-left: 2rem;
+    padding-right: 2rem;
 }
 
 </style>

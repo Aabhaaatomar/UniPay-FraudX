@@ -93,8 +93,14 @@ The application is deployed using Streamlit Cloud and can be accessed online.
 
 ---
 
-## 🎥 Demo Video  
-*(Upload your video link here)*
+## 🎥 Demo Videos
+
+▶️ **App Demo (UI + Prediction)**  
+
+
+▶️ **Code Walkthrough**  
+
+
 
 ---
 

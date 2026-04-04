@@ -1,166 +1,371 @@
+from click import style
 import streamlit as st
 import pandas as pd
 import pickle
-import plotly.express as px # pyright: ignore[reportMissingImports]
+import plotly.express as px
 
-model = pickle.load(open("fraud_model.pkl", "rb"))
-# ✅ 1. PAGE CONFIG (SABSE PEHLE)
 st.set_page_config(page_title="UniPay FraudX", layout="wide")
 
-# ✅ 2. CUSTOM CSS (USKE BAAD)
+# 🔥 NAVBAR STYLE
 st.markdown("""
 <style>
-.stApp {
-    background: linear-gradient(135deg, #f7e1ea, #fbc2d4);
-}
-</style>
-""", unsafe_allow_html=True)
-
-# ✅ 3. SIDEBAR NAVIGATION (USKE BAAD)
-page = st.sidebar.radio("Navigation", ["Dashboard", "Prediction"])
-
-# ------------------ PAGE CONFIG ------------------
-st.set_page_config(page_title="UniPay FraudX", layout="wide")
-
-if page == "Dashboard":
-
-    st.title("📊 A system that detects fraudulent transactions in real-time")
-
-    # 👉 CARDS
-    col1, col2, col3 = st.columns(3)
-
-    # total, fraud, normal yaha
-
-    # 👉 CHARTS
-    # pie chart
-    # bar chart
-    # scatter plot
-    
-elif page == "Prediction":
-    st.title("🔍 Predict Transaction")
-
-    st.markdown("### 💳 Enter Transaction Details")
-
-    col1, col2, col3 = st.columns(3)
-
-    amount = col1.slider("Amount", 0, 10000, 1000)
-    txn = col2.slider("Txn Count (1hr)", 0, 20, 2)
-    hour = col3.slider("Hour", 0, 23, 12)
-
-    if st.button("Predict"):
-        pred = model.predict([[amount, txn, hour]])[0]
-
-        if pred == 1:
-            st.error("🚨 Fraud Transaction")
-        else:
-            st.success("✅ Normal Transaction")
-    
-# ------------------ CUSTOM CSS (PINK VIBE) ------------------
-st.markdown("""
-<style>
-.stApp {
-    background: linear-gradient(135deg, #f7e1ea, #fbc2d4);
-}
-
-.block-container {
-    background-color: transparent;
-}
-
-h1, h2, h3 {
-    color: #5c2a4a;
-    text-align: center;
-}
-
-.stButton>button {
-    background-color: #ff85a2;
-    color: white;
+.navbar {
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    background: white;
+    padding: 15px;
     border-radius: 12px;
-    padding: 10px 20px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
 }
-
-.stButton>button:hover {
-    background-color: #ff5c8a;
+.nav-item {
+    font-size: 18px;
+    font-weight: 500;
+    cursor: pointer;
 }
 </style>
 """, unsafe_allow_html=True)
 
-
+# 👉 NAVIGATION OPTIONS
+page = st.radio(
+    "",
+    ["Home", "Analysis", "Dashboard", "Prediction", "About"],
+    horizontal=True
+)
 
 # ------------------ LOAD DATA ------------------
 df = pd.read_excel("data.xlsx")
-
-# ------------------ LOAD MODEL ------------------
 model = pickle.load(open("fraud_model.pkl", "rb"))
 
-# ------------------ TITLE ------------------
-st.markdown("<h1 style='text-align:center;'>💳 UniPay FraudX Dashboard</h1>", unsafe_allow_html=True)
-st.markdown("<p style='text-align:center;'>Smart Fraud Detection System</p>", unsafe_allow_html=True)
+# ------------------ CUSTOM CSS ------------------
+st.markdown("""
+<style>
 
-# ------------------ CARDS ------------------
-col1, col2, col3 = st.columns(3)
+/* Background */
+.stApp {
+    background: linear-gradient(135deg, #f5f7fa, #e4e7eb);
+}
 
+/* Heading center */
+h1 {
+    text-align: center;
+}
 
-total = len(df)
-fraud = int(df["label"].value_counts().get("Suspicious", 0))
-normal = total - fraud
+/* Button styling */
+.stButton > button {
+    background: linear-gradient(45deg, #6c63ff, #5a55d1);
+    color: white;
+    border-radius: 10px;
+    padding: 10px 20px;
+    border: none;
+    transition: 0.3s;
+}
 
-df["label_name"] = df["label"].map({
-    0: "Normal",
-    1: "Suspicious"
-})
+/* Hover effect */
+.stButton > button:hover {
+    transform: scale(1.05);
+}
 
+</style>
+""", unsafe_allow_html=True)
 
-with col1:
-    st.markdown(f"<div class='card'><h3>Total Transactions</h3><h2>{total}</h2></div>", unsafe_allow_html=True)
+# ================== HOME ==================
+if page == "Home":
 
-with col2:
-    st.markdown(f"<div class='card'><h3>Fraud</h3><h2>{fraud}</h2></div>", unsafe_allow_html=True)
+    st.markdown("""
+    <style>
+    .hero {
+        height: 90vh;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        background-image: url("https://elmeurope.com/wp-content/uploads/2024/10/elm-europe-high-demand-prediction-main.jpg");
+        background-size: cover;
+        background-position: center;
+        color: white;
+        text-align: center;
+        border-radius: 20px;
+    }
 
-with col3:
-    st.markdown(f"<div class='card'><h3>Normal</h3><h2>{normal}</h2></div>", unsafe_allow_html=True)
+    .overlay {
+        background: rgba(0,0,0,0.6);
+        padding: 50px;
+        border-radius: 20px;
+    }
 
-st.markdown("---")
+    .title {
+        font-size: 50px;
+        font-weight: bold;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+    }
 
-# ------------------ CHARTS ------------------
-col1, col2 = st.columns(2)
+    .subtitle {
+        font-size: 18px;
+        margin-top: 10px;
+    }
 
-with col1:
-    fig1 = px.pie(df, names="label", title="Fraud Distribution",
-                  color_discrete_sequence=["#ff4d6d", "#4cc9f0"])
-    st.plotly_chart(fig1, use_container_width=True)
+    .btn {
+        margin-top: 20px;
+        padding: 12px 30px;
+        background-color: #f5f5f5;
+        color: #333;
+        border-radius: 10px;
+        font-size: 16px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+        background-color: #ff6f91;
+        color: white;
+    }
+    </style>
 
-with col2:
-    fig2 = px.histogram(df, x="hour", title="Transactions by Hour",
-                        color_discrete_sequence=["#a2d2ff"])
-    st.plotly_chart(fig2, use_container_width=True)
+    <div class="hero">
+        <div class="overlay">
+            <div class="title">🚀 SMART TRANSACTION FRAUD DETECTION SYSTEM</div>
+            <div class="subtitle">
+            Detect fraudulent transactions in real-time with AI-powered insights
+            </div>
+            <div class="btn">🚀 UniPay FraudX</div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
 
-# ------------------ SCATTER PLOT ------------------
-fig3 = px.scatter(df, x="amount", y="txn_count_1hr",
-                  color=df["label"].astype(str),
-                  title="Transaction Scatter Plot",
-                  color_discrete_sequence=["green", "red"])
+# ================== ANALYSIS ==================
+elif page == "Analysis":
 
-st.plotly_chart(fig3, use_container_width=True)
+    st.title("📊 Data Analysis")
 
-st.markdown("---")
+    df = pd.read_excel("data.xlsx")
 
-# ------------------ PREDICTION SECTION ------------------
-st.subheader("🔍 Predict Transaction")
+    st.subheader("📁 Dataset Preview")
+    st.dataframe(df)
 
-col1, col2, col3 = st.columns(3)
+    st.subheader("📌 Basic Info")
+    st.write(df.describe())
 
-amount = int(col1.number_input("Amount", min_value=0, step=1))
-txn = int(col2.number_input("Txn Count (1hr)", min_value=0, step=1))
-hour = int(col3.number_input("Hour (0-23)", min_value=0, max_value=23, step=1))
+    # Tabs
+    tab1, tab2 = st.tabs(["Charts", "Insights"])
 
-if st.button("Predict"):
+    with tab1:
+        st.subheader("📊 Charts")
 
-    if amount > 8000 and txn > 10:
-        pred = 1
-    else:
-        pred = model.predict([[amount, txn, hour]])[0]
+        fig1 = px.histogram(df, x="amount", color="label")
+        fig1.update_traces(
+            marker_line_width=1.5,
+            marker_line_color="black")
+        st.plotly_chart(fig1, use_container_width=True)
 
-    if pred == 1:
-        st.error("🚨 Fraud Transaction")
-    else:
-        st.success("✅ Normal Transaction")
+        fig2 = px.scatter(df, x="amount", y="txn_count_1hr", color="label")
+        st.plotly_chart(fig2, use_container_width=True)
+
+    with tab2:
+        st.subheader("💡 Insights")
+        
+        st.markdown("""
+                    🔍 **Key Observations:**
+                    
+                    • Transactions with **higher amounts and frequent activity** show a strong pattern of suspicious behavior.
+                    
+                    • **Late-night transactions (0–6 hours)** are more likely to be flagged as risky.
+                    
+                    • Users with **high transaction counts within short time** may indicate fraud attempts.
+                    
+                    • Normal transactions are generally **low frequency and moderate amount**.
+                    
+                    💡 **Conclusion:**  
+                    
+                    Combining transaction amount, frequency, and timing significantly improves fraud detection accuracy.
+                    """)
+
+# ================== DASHBOARD ==================
+elif page == "Dashboard":
+
+    st.title("📊 Transaction Analysis Dashboard")
+    fig_bar = px.bar(
+            df,
+            x="hour",
+            y="txn_count_1hr",
+            color="label",
+            title=" 🕒 Transactions by Hour"
+            )
+    fig_bar.update_traces(marker_line_color='black', marker_line_width=1)
+    fig_bar.update_layout(plot_bgcolor="#f5f5f5")
+    
+    
+    df_line = df.groupby("hour")["amount"].mean().reset_index()
+    fig_line= px.line(df_line,
+                      x="hour",
+                      y="amount",
+                      title=" 📈 Amount Trend Over Time")
+    fig_line.update_traces(mode="markers+lines", marker=dict(size=8, color="#ff6f91"))
+    fig_line.update_layout(plot_bgcolor="#f5f5f5")
+        
+    fraud_count = df["label"].value_counts()
+    fig_donut = px.pie(
+            values=fraud_count.values,
+            names=["Normal", "Fraud"],
+            hole=0.5,
+            title=" 📊 Fraud vs Normal")
+    fig_donut.update_layout(annotations=[dict(text='Transaction<br>Split', x=0.5, y=0.5, font_size=18, showarrow=False, font = dict(size=20, color="#333"))])
+    fig_donut.update_layout(plot_bgcolor="#f5f5f5")
+    
+    fig_location = px.pie(df,
+                     names="location_type",
+                     title=" 📍 Transaction by Location")
+    fig_location.update_layout(plot_bgcolor="#f5f5f5")
+        
+    fig_sender = px.bar(
+            df,
+            x="sender_type",
+            color="receiver_type",
+            title=" 📊 Sender vs Receiver Comparison",
+            barmode="group")
+    fig_sender.update_layout(plot_bgcolor="#f5f5f5")
+        
+    fig_box = px.box(
+            df,
+            x="label",
+            y="amount",
+            title=" 📈 Amount Distribution (Fraud vs Normal)")
+    fig_box.update_layout(plot_bgcolor="#f5f5f5")
+    
+    # ------------------ LAYOUT ------------------
+
+    col1, col2 = st.columns(2)
+    with col1:
+        st.plotly_chart(fig_bar, use_container_width=True)
+    with col2:
+        st.plotly_chart(fig_line, use_container_width=True)
+
+    st.plotly_chart(fig_donut, use_container_width=True, key="donut chart")
+
+    col3, col4 = st.columns(2)
+    with col3:
+        st.plotly_chart(fig_location, use_container_width=True)
+    with col4:
+        st.plotly_chart(fig_sender, use_container_width=True)
+
+# ================== PREDICTION ==================
+elif page == "Prediction":
+
+    st.title("🔮 Predict Transaction")
+
+    amount = st.number_input("Amount")
+    txn = st.number_input("Txn Count")
+    hour = st.slider("Hour", 0, 23)
+
+    if st.button("Predict"):
+        if amount > 10000:
+            pred = 1
+            reason = "High transaction amount"
+
+        elif txn > 10:
+            pred = 1
+            reason = "Too many transactions"
+
+        elif 0<= hour <= 5 and amount > 4000:
+            pred = 1
+            reason = "Late night transaction"
+        
+        else:
+            pred = model.predict([[amount, txn, hour]])[0]
+            reason = "Based on ML model"
+            
+        # Confidence calculation
+        proba = model.predict_proba([[amount, txn, hour]])[0]
+        confidence = max(proba) * 100
+        
+        # RISK SCORE CALCULATION
+        risk_score = 0
+        
+        if amount > 10000:
+            risk_score += 50
+        if txn > 10:
+            risk_score += 30
+        if 0<= hour <= 5 and amount > 4000:
+            risk_score += 20
+        
+        if risk_score > 70:
+            pred = 1
+            reason = "High risk score based on rules"
+        elif risk_score > 40:
+            pred = 1
+            reason = "Moderate risk score based on rules"
+        elif risk_score > 0:
+            pred = 1
+            reason = "Low risk score based on rules"
+        
+        
+        if pred == 1:
+            st.markdown(f"""
+                        <div style="
+                        background: linear-gradient(135deg, #ff4b8b, #ff1e56);
+                        padding: 25px;
+                        border-radius: 15px;
+                        color: white;
+                        text-align: left;
+                        font-size: 18px;
+                        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+                        ">
+                        🚨 <b>Suspicious Transaction Detected</b><br><br>
+                        💰 Amount: {amount}<br>
+                        🔁 Transactions: {txn}<br>
+                        ⏰ Hour: {hour}<br>
+                        📊 Confidence: {confidence:.2f}%<br><br>
+                        📈 Risk Score: {risk_score}<br><br>
+                        ⚠️ Risk Level: {"High" if risk_score > 70 else "Moderate" if risk_score > 40 else "Low"}<br>
+                        📝 Reason: {reason}<br><br>
+                        ⚠️ <b>Recommendation:</b><br>
+                        • Verify transaction immediately<br>
+                        • Enable OTP or 2FA authentication<br>
+                        • Monitor account activity closely
+                        </div>
+                        """, unsafe_allow_html=True)
+        else:
+            st.markdown(f"""
+            <div style="
+            background: linear-gradient(135deg, #36cfc9, #00b894);
+            padding: 25px;
+            border-radius: 15px;
+            color: white;
+            text-align: left;
+            font-size: 18px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        ">
+        ✅ <b>Normal Transaction</b><br><br>
+
+        💰 Amount: {amount}<br>
+        🔁 Transactions: {txn}<br>
+        ⏰ Hour: {hour}<br>
+        📊 Confidence: {confidence:.2f}%<br><br>
+        📈 Risk Score: {risk_score}<br><br>
+        ⚠️ Risk Level: {"High" if risk_score > 70 else "Moderate" if risk_score > 40 else "Low"}<br>
+        📝 Reason: {reason}<br><br>
+
+        👍 <b>Recommendation:</b><br>
+        • Transaction appears safe<br>
+        • No immediate action required<br>
+        • Continue normal usage
+        </div>
+        """, unsafe_allow_html=True)
+    
+
+    
+# ================== ABOUT ==================
+elif page == "About":
+
+    st.title("👨‍💻 About UniPay FraudX")
+
+    st.markdown("""
+    **UniPay FraudX** is an AI-powered fraud detection system designed to identify and prevent fraudulent transactions in real-time. Leveraging advanced machine learning algorithms, UniPay FraudX analyzes transaction patterns, user behavior, and contextual data to accurately flag suspicious activities.
+
+    Key Features:
+    - Real-time fraud detection with high accuracy
+    - User-friendly dashboard for monitoring transactions
+    - Customizable alerts and notifications
+    - Comprehensive data analysis tools
+
+    Developed by a passionate team of data scientists and engineers, UniPay FraudX aims to provide businesses with a robust solution to combat financial fraud and enhance security.
+    """)
+    

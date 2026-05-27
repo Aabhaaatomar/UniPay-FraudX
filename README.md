@@ -108,5 +108,23 @@ B.Tech CSE (Data Science)
 
 ---
 
+## 🤝 Contributors
+- Aabha Tomar
+- Simran
+- Nishant Rajawat
+- Sakshi Rajawat
+- Chetna Sharma
+---
+
+## ⚙️ Installation
+
+git clone <repo-link>
+
+pip install -r requirements.txt
+
+streamlit run app.py
+
+---
+
 ## ⭐ Conclusion  
 UniPay FraudX demonstrates how machine learning can be applied to detect fraud in digital payments while maintaining simplicity and usability for academic environments.

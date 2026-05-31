@@ -522,33 +522,32 @@ elif "Prediction" in page:
                 color = "#ff1e56" if final_pred == 1 else "#00b894"
                 
                 st.markdown(f"""
-                    <div class="{card_class}">
-                        <h3 style="margin-top:0; color: {color} !important;">{icon} {risk_level} TRANSACTION</h3>
-                        <p style="opacity:0.8; margin-bottom: 20px;">{reason}</p>
-                        
-                        <div style="display:flex; justify-content:space-between; margin-bottom: 5px;">
-                            <span style="font-size:0.9rem; font-weight:600;">Fraud Probability</span>
-                            <span style="font-size:0.9rem; font-weight:600; color:{color};">{confidence:.1f}%</span>
-                        </div>
-                        <div class="progress-bg">
-                            <div class="progress-fill" style="width: {confidence}%; background: {color};"></div>
-                        </div>
-                        
-                        <hr style="border:1px solid rgba(128,128,128,0.1); margin: 20px 0;">
-                        
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                            <div>
-                                <div style="font-size:0.8rem; opacity:0.7;">Calculated Risk Score</div>
-                                <div style="font-size:1.5rem; font-weight:700;">{risk_score}/100</div>
-                            </div>
-                            <div>
-                                <div style="font-size:0.8rem; opacity:0.7;">Engine</div>
-                                <div style="font-size:1.1rem; font-weight:600;">RandomForest + Rules</div>
-                            </div>
-                        </div>
-                        </div>
-                    </div>
-                """, unsafe_allow_html=True)
+<div class="{card_class}">
+    <h3 style="margin-top:0; color: {color} !important;">{icon} {risk_level} TRANSACTION</h3>
+    <p style="opacity:0.8; margin-bottom: 20px;">{reason}</p>
+    
+    <div style="display:flex; justify-content:space-between; margin-bottom: 5px;">
+        <span style="font-size:0.9rem; font-weight:600;">Fraud Probability</span>
+        <span style="font-size:0.9rem; font-weight:600; color:{color};">{confidence:.1f}%</span>
+    </div>
+    <div class="progress-bg">
+        <div class="progress-fill" style="width: {confidence}%; background: {color};"></div>
+    </div>
+    
+    <hr style="border:1px solid rgba(128,128,128,0.1); margin: 20px 0;">
+    
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+        <div>
+            <div style="font-size:0.8rem; opacity:0.7;">Calculated Risk Score</div>
+            <div style="font-size:1.5rem; font-weight:700;">{risk_score}/100</div>
+        </div>
+        <div>
+            <div style="font-size:0.8rem; opacity:0.7;">Engine</div>
+            <div style="font-size:1.1rem; font-weight:600;">RandomForest + Rules</div>
+        </div>
+    </div>
+</div>
+""", unsafe_allow_html=True)
                 
                 # AI Audio Alert for Fraud & Safe Transactions
                 try:

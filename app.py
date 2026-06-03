@@ -14,56 +14,134 @@ st.set_page_config(page_title="UniPay FraudX", layout="wide", initial_sidebar_st
 
 # ================== CSS THEME INJECTION ==================
 def inject_custom_css(theme):
-    # Base Google Font & Shared Layout Rules
-    st.markdown("""
+    """Inject theme-aware custom CSS into the Streamlit app.
+
+    Args:
+        theme (str): Active theme name. Expected values are "Dark" or "Light".
+
+    Returns:
+        None: This function writes CSS directly to the Streamlit app.
+    """
+    if theme == "Dark":
+        app_bg = "#0b0f19"
+        sidebar_bg = "#111827"
+        text_color = "#f3f4f6"
+        metric_title_color = "#f3f4f6"
+        metric_title_opacity = "0.7"
+        metric_value_color = "#ffffff"
+        metric_subtitle_color = "#f3f4f6"
+        metric_subtitle_opacity = "0.5"
+        card_bg = "rgba(255,255,255,0.03)"
+        input_bg = "rgba(255,255,255,0.05)"
+    else:
+        app_bg = "#f8fafc"
+        sidebar_bg = "#ffffff"
+        text_color = "#1e293b"
+        metric_title_color = "#64748b"
+        metric_title_opacity = "1"
+        metric_value_color = "#0f172a"
+        metric_subtitle_color = "#94a3b8"
+        metric_subtitle_opacity = "1"
+        card_bg = "#ffffff"
+        input_bg = "#ffffff"
+
+    st.markdown(f"""
         <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght=300;400;500;600;700&display=swap');
-        * { font-family: 'Inter', sans-serif !important; }
-        .glass-card { backdrop-filter: blur(10px); border-radius:16px; padding:24px; margin-bottom:24px; border: 1px solid rgba(128,128,128,0.1); }
-        .metric-title { font-size:0.9rem; font-weight:500; text-transform:uppercase; margin-bottom: 4px; }
-        .metric-value { font-size:2.2rem; font-weight:700; margin-bottom: 2px; }
-        .metric-subtitle { font-size:0.85rem; }
-        .stButton > button { background: linear-gradient(135deg, #ff4b8b 0%, #ff1e56 100%); color: white !important; border-radius:8px; padding:0.5rem 1.5rem; border:none; }
-        .progress-bg { background: rgba(255,255,255,0.1); border-radius:8px; height:12px; width:100%; overflow:hidden; margin-top:10px; }
-        .progress-fill { height:100%; border-radius:8px; }
-        .result-box { padding:24px; border-radius:16px; margin-top:20px; }
-        .result-danger { background: linear-gradient(145deg, rgba(255,30,86,0.1) 0%, rgba(255,75,139,0.05) 100%); border-left:6px solid #ff1e56; }
-        .result-success { background: linear-gradient(145deg, rgba(0,184,148,0.1) 0%, rgba(54,207,201,0.05) 100%); border-left:6px solid #00b894; }
-        .block-container { padding-top:2rem !important; }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        /* Global font */
+        * {{ font-family: 'Inter', sans-serif !important; }}
+
+        /* App & sidebar backgrounds */
+        [data-testid="stAppViewContainer"] {{ background-color: {app_bg}; }}
+        [data-testid="stSidebar"] {{ background-color: {sidebar_bg}; }}
+
+        /* Global text color */
+        h1, h2, h3, h4, h5, h6, p, label {{ color: {text_color} !important; }}
+
+        /* Glass card styling */
+        .glass-card {{ 
+            background: {card_bg}; 
+            backdrop-filter: blur(10px); 
+            border-radius: 16px; 
+            padding: 24px; 
+            margin-bottom: 24px; 
+            border: 1px solid rgba(128,128,128,0.1); 
+        }}
+
+        /* Metric components */
+        .metric-title {{ 
+            font-size: 0.9rem; 
+            font-weight: 500; 
+            text-transform: uppercase; 
+            margin-bottom: 4px; 
+            color: {metric_title_color} !important;
+            opacity: {metric_title_opacity};
+        }}
+        .metric-value {{ 
+            font-size: 2.2rem; 
+            font-weight: 700; 
+            margin-bottom: 2px; 
+            color: {metric_value_color} !important;
+        }}
+        .metric-subtitle {{ 
+            font-size: 0.85rem; 
+            color: {metric_subtitle_color} !important;
+            opacity: {metric_subtitle_opacity};
+        }}
+
+        /* Button styling */
+        .stButton > button {{ 
+            background: linear-gradient(135deg, #ff4b8b 0%, #ff1e56 100%); 
+            color: white !important; 
+            border-radius: 8px; 
+            padding: 0.5rem 1.5rem; 
+            border: none; 
+        }}
+
+        /* Input fields */
+        input, [data-baseweb="input"] {{ 
+            background-color: {input_bg} !important; 
+            color: {text_color} !important; 
+        }}
+
+        /* Progress bar */
+        .progress-bg {{ 
+            background: rgba(255,255,255,0.1); 
+            border-radius: 8px; 
+            height: 12px; 
+            width: 100%; 
+            overflow: hidden; 
+            margin-top: 10px; 
+        }}
+        .progress-fill {{ 
+            height: 100%; 
+            border-radius: 8px; 
+        }}
+
+        /* Result boxes */
+        .result-box {{ 
+            padding: 24px; 
+            border-radius: 16px; 
+            margin-top: 20px; 
+        }}
+        .result-danger {{ 
+            background: linear-gradient(145deg, rgba(255,30,86,0.1) 0%, rgba(255,75,139,0.05) 100%); 
+            border-left: 6px solid #ff1e56; 
+        }}
+        .result-success {{ 
+            background: linear-gradient(145deg, rgba(0,184,148,0.1) 0%, rgba(54,207,201,0.05) 100%); 
+            border-left: 6px solid #00b894; 
+        }}
+
+        /* Block container */
+        .block-container {{ padding-top: 2rem !important; }}
+
+        /* Markdown container */
+        div[data-testid="stMarkdownContainer"] p {{ color: {text_color} !important; }}
+
         </style>
     """, unsafe_allow_html=True)
-
-    if theme == "Dark":
-        st.markdown("""
-            <style>
-            [data-testid="stAppViewContainer"] { background-color: #0b0f19; }
-            [data-testid="stSidebar"] { background-color: #111827; }
-            h1, h2, h3, h4, h5, h6, p, label { color: #f3f4f6 !important; }
-            .glass-card { background: rgba(255,255,255,0.03); }
-            .metric-title { color: #f3f4f6; opacity: 0.7; }
-            .metric-value { color: #ffffff; }
-            .metric-subtitle { color: #f3f4f6; opacity: 0.5; }
-            </style>
-        """, unsafe_allow_html=True)
-    else:
-        st.markdown("""
-            <style>
-            [data-testid="stAppViewContainer"] { background-color: #f8fafc; }
-            [data-testid="stSidebar"] { background-color: #ffffff; }
-            /* Safely color standard typography without crashing native inputs */
-            h1, h2, h3, h4, h5, h6, p, label { color: #1e293b !important; }
-            
-            /* Style the KPI glass-cards explicitly for light mode contrast */
-            .glass-card { background: #ffffff; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03); }
-            .metric-title { color: #64748b !important; }
-            .metric-value { color: #0f172a !important; }
-            .metric-subtitle { color: #94a3b8 !important; }
-            
-            /* Force native input fields to match light mode theme guidelines */
-            input, [data-baseweb="input"] { background-color: #ffffff !important; color: #1e293b !important; }
-            div[data-testid="stMarkdownContainer"] p { color: #1e293b !important; }
-            </style>
-        """, unsafe_allow_html=True)
 
 # ================== DATA LOADING ==================
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -71,6 +149,12 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 @st.cache_data
 def load_data():
+    """Load the transaction dataset from disk.
+
+    Returns:
+        pd.DataFrame: Loaded dataset if available and valid; otherwise an
+        empty DataFrame.
+    """
     dataset_path = os.path.join(BASE_DIR, "dataset", "data.xlsx")
     if not os.path.exists(dataset_path):
         return pd.DataFrame()
@@ -83,6 +167,12 @@ def load_data():
 
 @st.cache_resource
 def load_model():
+    """Load the fraud detection model from disk.
+
+    Returns:
+        object | None: Deserialized model object if available and valid;
+        otherwise None.
+    """
     model_path = os.path.join(BASE_DIR, "models", "fraud_model.pkl")
     if not os.path.exists(model_path):
         return None
@@ -205,7 +295,7 @@ page = st.sidebar.radio(
 )
 
 st.sidebar.markdown("### Settings")
-theme_choice = st.sidebar.radio("Theme Mode", ["🌙 Dark", "☀️ Light"])
+theme_choice = st.sidebar.radio("Theme Mode", ["🌙 Dark", "☀️ Light"], key="theme_choice")
 theme = "Dark" if "Dark" in theme_choice else "Light"
 
 inject_custom_css(theme)
@@ -214,31 +304,44 @@ chart_font_color = "#f3f4f6" if theme == "Dark" else "#1e293b"
 chart_bg_color = "rgba(0,0,0,0)" if theme =="Dark" else "#ffffff"
 grid_color = "rgba(255,255,255,0.1)" if theme == "Dark" else "rgba(0,0,0,0.08)"
 
+# ================== GRAPH LAYOUTS ==================
 def apply_plotly_layout(fig):
-    fig.update_layout(
-        plot_bgcolor=chart_bg_color,
-        paper_bgcolor=chart_bg_color,
-        font=dict(family="Inter", color=chart_font_color),
-        margin=dict(l=30, r=20, t=50, b=30),
-        title=dict(font=dict(color=chart_font_color, size=16)),
-        legend=dict(
-            font=dict(color=chart_font_color),
-            title=dict(font=dict(color=chart_font_color))
-        ),
-        xaxis=dict(
-            showgrid=False,
-            zeroline=False,
-            title=dict(font=dict(color=chart_font_color)),
-            tickfont=dict(color=chart_font_color)
-        ),
-        yaxis=dict(
-            showgrid=True,
-            gridcolor=grid_color,
-            zeroline=False,
-            title=dict(font=dict(color=chart_font_color)),
-            tickfont=dict(color=chart_font_color)
+    """Apply a consistent theme-aware layout to a Plotly figure.
+
+    Args:
+        fig: Plotly figure object to update.
+
+    Returns:
+        The updated Plotly figure.
+    """
+    try:
+        fig.update_layout(
+            plot_bgcolor=chart_bg_color,
+            paper_bgcolor=chart_bg_color,
+            font=dict(family="Inter", color=chart_font_color),
+            margin=dict(l=30, r=20, t=50, b=30),
+            title=dict(font=dict(color=chart_font_color, size=16)),
+            legend=dict(
+                font=dict(color=chart_font_color),
+                title=dict(font=dict(color=chart_font_color))
+            ),
+            xaxis=dict(
+                showgrid=False,
+                zeroline=False,
+                title=dict(font=dict(color=chart_font_color)),
+                tickfont=dict(color=chart_font_color)
+            ),
+            yaxis=dict(
+                showgrid=True,
+                gridcolor=grid_color,
+                zeroline=False,
+                title=dict(font=dict(color=chart_font_color)),
+                tickfont=dict(color=chart_font_color)
+            )
         )
-    )
+    except Exception as e:
+        msg = str(e).split("\n")[0][:120]
+        st.error(f"Chart layout failed: {msg}")
     return fig
 
 
@@ -396,7 +499,7 @@ elif "Prediction" in page or "Prediction Engine" in page:
 
 
         else:
-            st.markdown(f"<div style='height: 100%; display: flex; align-items: center; justify-content: center; opacity: 0.5; border: 2px dashed rgba(128,128,128,0.2); border-radius: 16px; padding: 50px; text-align: center; color: {chart_font_color};'>Waiting for telemetry input... Enter parameters and click Initialize Inference.</div>", unsafe_allow_html=True)
+            st.markdown(f"<div style='height: 100%; display: flex; align-items: center; justify-content: center; opacity: 0.3; border: 2px dashed rgba(128,128,128,0.2); border-radius: 16px; padding: 50px; text-align: center; color: {chart_font_color};'>Waiting for telemetry input... Enter parameters and click Initialize Inference.</div>", unsafe_allow_html=True)
 
 
 elif "About" in page:

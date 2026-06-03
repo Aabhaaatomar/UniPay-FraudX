@@ -209,24 +209,25 @@ if df.empty or model is None:
             background: linear-gradient(135deg, rgba(255, 107, 53, 0.15) 0%, rgba(255, 193, 7, 0.1) 100%);
             border: 2px solid #ff6b35;
             border-radius: 12px;
-            padding: 24px;
-            margin: 20px auto;
-            max-width: 720px;
+            padding: 16px;
+            margin: 15px auto;
+            max-width: 600px;
         '>
-            <h3 style='color: #ff6b35; margin-top: 0; text-align: center;'>🚀 Quick Setup</h3>
-            <p style='opacity: 0.9; text-align: center; font-weight: 600; margin-bottom: 16px;'>Run this command from the project root:</p>
+            <h3 style='color: #ff6b35; margin: 0 0 12px 0; text-align: center; font-size: 1.3rem;'>🚀 Quick Setup</h3>
+            <p style='opacity: 0.9; text-align: center; font-weight: 600; margin-bottom: 12px; font-size: 0.9rem;'>Run from project root:</p>
             <div style='
                 background: rgba(0, 0, 0, 0.3);
                 border-radius: 8px;
-                padding: 12px 16px;
+                padding: 10px 12px;
                 font-family: "Courier New", monospace;
-                font-size: 1.05rem;
+                font-size: 0.95rem;
                 text-align: center;
                 color: #00ff88;
-                margin-bottom: 12px;
+                margin-bottom: 10px;
                 user-select: all;
             '><strong>python models/model.py</strong></div>
-            <p style='opacity: 0.8; margin-bottom: 0; font-size: 0.9rem; text-align: center;'>This will generate both dataset and ML model automatically.</p>
+            <p style='opacity: 0.8; margin: 0; font-size: 0.8rem; text-align: center;'>Auto-generates dataset & ML model</p>
+            <p style='opacity: 0.8; margin: 0; font-size: 0.8rem; text-align: center;'>Refresh Browser afterwards</p>
         </div>
     """, unsafe_allow_html=True)
 
@@ -258,22 +259,9 @@ if df.empty or model is None:
                     "```bash\npython models/model.py\n```"
                 )
 
-    # ========== NEXT STEPS ==========
-    st.markdown("""
-        <div class='glass-card'>
-            <h4>📋 Manual Steps (if auto-generation fails):</h4>
-            <ol style='opacity: 0.85; line-height: 2;'>
-                <li>Open terminal in project root: <code>c:\\Users\\HP\\UniPay-FraudX</code></li>
-                <li>Run: <code style='background: rgba(0,0,0,0.1); padding: 2px 6px; border-radius: 4px;'>python models/model.py</code></li>
-                <li>Wait for completion (1–2 minutes)</li>
-                <li>Refresh this app in your browser</li>
-            </ol>
-        </div>
-    """, unsafe_allow_html=True)
-
     st.info(
-        "📖 For full setup instructions, refer to the "
-        "[README](https://github.com/Aabhaaatomar/UniPay-FraudX#️-installation)."
+        "📖 For more instructions, refer to the "
+        "[README](https://github.com/Aabhaaatomar/UniPay-FraudX/blob/main/README.md)"
     )
     st.stop()
 

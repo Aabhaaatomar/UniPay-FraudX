@@ -8,21 +8,21 @@ import pandas as pd
 import pickle
 import plotly.express as px
 import plotly.graph_objects as go
-from fraud_detector import analyze_transaction
+from models.fraud_detector import analyze_transaction
 
 st.set_page_config(page_title="UniPay FraudX", layout="wide", initial_sidebar_state="expanded")
 
 # ================== CSS THEME INJECTION ==================
 def inject_custom_css(theme):
-    # Base Google Font
+    # Base Google Font & Shared Layout Rules
     st.markdown("""
         <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght=300;400;500;600;700&display=swap');
         * { font-family: 'Inter', sans-serif !important; }
-        .glass-card { background: rgba(255,255,255,0.03); backdrop-filter: blur(10px); border-radius:16px; padding:24px; margin-bottom:24px; }
-        .metric-title { font-size:0.9rem; font-weight:500; text-transform:uppercase; opacity:0.8; }
-        .metric-value { font-size:2.2rem; font-weight:700; }
-        .metric-subtitle { font-size:0.85rem; opacity:0.6; }
+        .glass-card { backdrop-filter: blur(10px); border-radius:16px; padding:24px; margin-bottom:24px; border: 1px solid rgba(128,128,128,0.1); }
+        .metric-title { font-size:0.9rem; font-weight:500; text-transform:uppercase; margin-bottom: 4px; }
+        .metric-value { font-size:2.2rem; font-weight:700; margin-bottom: 2px; }
+        .metric-subtitle { font-size:0.85rem; }
         .stButton > button { background: linear-gradient(135deg, #ff4b8b 0%, #ff1e56 100%); color: white !important; border-radius:8px; padding:0.5rem 1.5rem; border:none; }
         .progress-bg { background: rgba(255,255,255,0.1); border-radius:8px; height:12px; width:100%; overflow:hidden; margin-top:10px; }
         .progress-fill { height:100%; border-radius:8px; }
@@ -40,6 +40,9 @@ def inject_custom_css(theme):
             [data-testid="stSidebar"] { background-color: #111827; }
             h1, h2, h3, h4, h5, h6, p, label { color: #f3f4f6 !important; }
             .glass-card { background: rgba(255,255,255,0.03); }
+            .metric-title { color: #f3f4f6; opacity: 0.7; }
+            .metric-value { color: #ffffff; }
+            .metric-subtitle { color: #f3f4f6; opacity: 0.5; }
             </style>
         """, unsafe_allow_html=True)
     else:
@@ -47,11 +50,20 @@ def inject_custom_css(theme):
             <style>
             [data-testid="stAppViewContainer"] { background-color: #f8fafc; }
             [data-testid="stSidebar"] { background-color: #ffffff; }
+            /* Safely color standard typography without crashing native inputs */
             h1, h2, h3, h4, h5, h6, p, label { color: #1e293b !important; }
-            .glass-card { background: rgba(255,255,255,1); }
+            
+            /* Style the KPI glass-cards explicitly for light mode contrast */
+            .glass-card { background: #ffffff; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03); }
+            .metric-title { color: #64748b !important; }
+            .metric-value { color: #0f172a !important; }
+            .metric-subtitle { color: #94a3b8 !important; }
+            
+            /* Force native input fields to match light mode theme guidelines */
+            input, [data-baseweb="input"] { background-color: #ffffff !important; color: #1e293b !important; }
+            div[data-testid="stMarkdownContainer"] p { color: #1e293b !important; }
             </style>
         """, unsafe_allow_html=True)
-
 
 # ================== DATA LOADING ==================
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -63,7 +75,8 @@ def load_data():
     if not os.path.exists(dataset_path):
         return pd.DataFrame()
     try:
-        return pd.read_excel(dataset_path)
+        df = pd.read_excel(dataset_path)
+        return df
     except Exception:
         return pd.DataFrame()
 
@@ -74,7 +87,8 @@ def load_model():
     if not os.path.exists(model_path):
         return None
     try:
-        return pickle.load(open(model_path, "rb"))
+        model = pickle.load(open(model_path, "rb"))
+        return model
     except Exception:
         return None
 
@@ -94,27 +108,78 @@ if df.empty or model is None:
         '>
             <h2 style='color:#ff1e56; margin-top:0;'>⚠️ Setup Required</h2>
             <p style='opacity:0.85; line-height:1.8;'>
-                UniPay FraudX could not start because one or more required files
-                are missing. Please follow the steps below to resolve this.
+                UniPay FraudX could not start because required files are missing.
             </p>
         </div>
     """, unsafe_allow_html=True)
 
-    if df.empty:
-        st.error(
-            "**Missing: Dataset file**\n\n"
-            "Expected at: `dataset/data.xlsx`\n\n"
-            "Ensure the Excel dataset exists in the `dataset/` folder "
-            "before starting the application."
-        )
+    # ========== PRIMARY SETUP INSTRUCTION ==========
+    st.markdown("""
+        <div style='
+            background: linear-gradient(135deg, rgba(255, 107, 53, 0.15) 0%, rgba(255, 193, 7, 0.1) 100%);
+            border: 2px solid #ff6b35;
+            border-radius: 12px;
+            padding: 24px;
+            margin: 20px auto;
+            max-width: 720px;
+        '>
+            <h3 style='color: #ff6b35; margin-top: 0; text-align: center;'>🚀 Quick Setup</h3>
+            <p style='opacity: 0.9; text-align: center; font-weight: 600; margin-bottom: 16px;'>Run this command from the project root:</p>
+            <div style='
+                background: rgba(0, 0, 0, 0.3);
+                border-radius: 8px;
+                padding: 12px 16px;
+                font-family: "Courier New", monospace;
+                font-size: 1.05rem;
+                text-align: center;
+                color: #00ff88;
+                margin-bottom: 12px;
+                user-select: all;
+            '><strong>python models/model.py</strong></div>
+            <p style='opacity: 0.8; margin-bottom: 0; font-size: 0.9rem; text-align: center;'>This will generate both dataset and ML model automatically.</p>
+        </div>
+    """, unsafe_allow_html=True)
 
-    if model is None:
-        st.error(
-            "**Missing: ML Model file**\n\n"
-            "Expected at: `models/fraud_model.pkl`\n\n"
-            "Run the following command from the project root to generate it:\n"
-            "```bash\npython fraud_model.py\n```"
-        )
+    # ========== DETAILED BREAKDOWN ==========
+    st.markdown("### **What's Missing?**")
+
+    missing_count = (1 if df.empty else 0) + (1 if model is None else 0)
+
+    if missing_count > 0:
+        columns = st.columns(missing_count)
+        col_idx = 0
+
+        if df.empty:
+            with columns[col_idx]:
+                st.error(
+                    "❌ **Dataset Missing**\n\n"
+                    "Expected: `dataset/data.xlsx`\n\n"
+                    "This file will be auto-generated when you run:\n"
+                    "```bash\npython models/model.py\n```"
+                )
+            col_idx += 1
+
+        if model is None:
+            with columns[col_idx]:
+                st.error(
+                    "❌ **Model Missing**\n\n"
+                    "Expected: `models/fraud_model.pkl`\n\n"
+                    "This file will be auto-generated when you run:\n"
+                    "```bash\npython models/model.py\n```"
+                )
+
+    # ========== NEXT STEPS ==========
+    st.markdown("""
+        <div class='glass-card'>
+            <h4>📋 Manual Steps (if auto-generation fails):</h4>
+            <ol style='opacity: 0.85; line-height: 2;'>
+                <li>Open terminal in project root: <code>c:\\Users\\HP\\UniPay-FraudX</code></li>
+                <li>Run: <code style='background: rgba(0,0,0,0.1); padding: 2px 6px; border-radius: 4px;'>python models/model.py</code></li>
+                <li>Wait for completion (1–2 minutes)</li>
+                <li>Refresh this app in your browser</li>
+            </ol>
+        </div>
+    """, unsafe_allow_html=True)
 
     st.info(
         "📖 For full setup instructions, refer to the "
@@ -146,16 +211,33 @@ theme = "Dark" if "Dark" in theme_choice else "Light"
 inject_custom_css(theme)
 
 chart_font_color = "#f3f4f6" if theme == "Dark" else "#1e293b"
-chart_bg_color = "rgba(0,0,0,0)"
+chart_bg_color = "rgba(0,0,0,0)" if theme =="Dark" else "#ffffff"
+grid_color = "rgba(255,255,255,0.1)" if theme == "Dark" else "rgba(0,0,0,0.08)"
 
 def apply_plotly_layout(fig):
     fig.update_layout(
         plot_bgcolor=chart_bg_color,
         paper_bgcolor=chart_bg_color,
         font=dict(family="Inter", color=chart_font_color),
-        margin=dict(l=20, r=20, t=40, b=20),
-        xaxis=dict(showgrid=False, zeroline=False),
-        yaxis=dict(showgrid=True, gridcolor='rgba(128,128,128,0.1)', zeroline=False)
+        margin=dict(l=30, r=20, t=50, b=30),
+        title=dict(font=dict(color=chart_font_color, size=16)),
+        legend=dict(
+            font=dict(color=chart_font_color),
+            title=dict(font=dict(color=chart_font_color))
+        ),
+        xaxis=dict(
+            showgrid=False,
+            zeroline=False,
+            title=dict(font=dict(color=chart_font_color)),
+            tickfont=dict(color=chart_font_color)
+        ),
+        yaxis=dict(
+            showgrid=True,
+            gridcolor=grid_color,
+            zeroline=False,
+            title=dict(font=dict(color=chart_font_color)),
+            tickfont=dict(color=chart_font_color)
+        )
     )
     return fig
 
@@ -201,14 +283,14 @@ elif "Dashboard" in page:
             title="Activity Volume by Hour",
             color_discrete_sequence=["#00b894", "#ff4b8b"]
         )
-        st.plotly_chart(apply_plotly_layout(fig_bar), use_container_width=True)
+        st.plotly_chart(apply_plotly_layout(fig_bar), width="stretch")
         st.markdown("</div>", unsafe_allow_html=True)
     with col2:
         st.markdown("<div class='glass-card'>", unsafe_allow_html=True)
         df_line = df.groupby("hour")["amount"].mean().reset_index()
         fig_line = px.line(df_line, x="hour", y="amount", title="Average Transaction Value Trend")
         fig_line.update_traces(line_color="#ff4b8b", line_width=3, fill='tozeroy', fillcolor='rgba(255,75,139,0.1)')
-        st.plotly_chart(apply_plotly_layout(fig_line), use_container_width=True)
+        st.plotly_chart(apply_plotly_layout(fig_line), width="stretch")
         st.markdown("</div>", unsafe_allow_html=True)
 
     col3, col4 = st.columns([1, 1.5])
@@ -216,12 +298,12 @@ elif "Dashboard" in page:
         st.markdown("<div class='glass-card'>", unsafe_allow_html=True)
         fig_donut = px.pie(df, names="label", hole=0.6, title="Risk Distribution", color_discrete_sequence=["#00b894", "#ff4b8b"])
         fig_donut.update_layout(annotations=[dict(text=f'{fraud_rate:.1f}%<br>Fraud', x=0.5, y=0.5, font_size=20, showarrow=False, font=dict(color=chart_font_color))])
-        st.plotly_chart(apply_plotly_layout(fig_donut), use_container_width=True)
+        st.plotly_chart(apply_plotly_layout(fig_donut), width="stretch")
         st.markdown("</div>", unsafe_allow_html=True)
     with col4:
         st.markdown("<div class='glass-card'>", unsafe_allow_html=True)
         fig_sender = px.bar(df, x="sender_type", color="receiver_type", title="Entity Type Correlation Matrix", barmode="stack", color_discrete_sequence=px.colors.qualitative.Pastel)
-        st.plotly_chart(apply_plotly_layout(fig_sender), use_container_width=True)
+        st.plotly_chart(apply_plotly_layout(fig_sender), width="stretch")
         st.markdown("</div>", unsafe_allow_html=True)
 
 
@@ -229,19 +311,19 @@ elif "Analysis" in page:
     st.markdown("<h2>Data Intelligence Explorer</h2>", unsafe_allow_html=True)
     st.markdown("<div class='glass-card'>", unsafe_allow_html=True)
     st.markdown("#### Transaction Registry")
-    st.dataframe(df, use_container_width=True, height=400)
+    st.dataframe(df, width="stretch", height=400, )
     st.markdown("</div>", unsafe_allow_html=True)
 
     col1, col2 = st.columns(2)
     with col1:
         st.markdown("<div class='glass-card'>", unsafe_allow_html=True)
         fig_hist = px.histogram(df, x="amount", color="label", nbins=40, title="Amount Distribution Density", color_discrete_sequence=["#00b894", "#ff4b8b"])
-        st.plotly_chart(apply_plotly_layout(fig_hist), use_container_width=True)
+        st.plotly_chart(apply_plotly_layout(fig_hist), width="stretch")
         st.markdown("</div>", unsafe_allow_html=True)
     with col2:
         st.markdown("<div class='glass-card'>", unsafe_allow_html=True)
         fig_scatter = px.scatter(df, x="amount", y="txn_count_1hr", color="label", size="amount", hover_data=["hour"], title="Velocity vs Value Analysis", color_discrete_sequence=["#00b894", "#ff4b8b"])
-        st.plotly_chart(apply_plotly_layout(fig_scatter), use_container_width=True)
+        st.plotly_chart(apply_plotly_layout(fig_scatter), width="stretch")
         st.markdown("</div>", unsafe_allow_html=True)
 
 
@@ -257,7 +339,7 @@ elif "Prediction" in page or "Prediction Engine" in page:
         txn = st.number_input("Txn Velocity (Last 1hr)", min_value=0, value=2, step=1)
         hour = st.slider("Hour of Day", 0, 23, 14)
         st.markdown("<br>", unsafe_allow_html=True)
-        predict_btn = st.button("Initialize Inference", use_container_width=True)
+        predict_btn = st.button("Initialize Inference", width="stretch")
         st.markdown("</div>", unsafe_allow_html=True)
 
     with result_col:
@@ -273,43 +355,48 @@ elif "Prediction" in page or "Prediction Engine" in page:
 
             card_class  = "result-danger" if final_pred == 1 else "result-success"
             icon        = "🚨" if final_pred == 1 else "✅"
-            color       = "#ff1e56" if final_pred == 1 else "#00b894"
+            color       = "#ff0000" if final_pred == 1 else "#10B981"
             display_verdict = "SUSPICIOUS" if final_pred == 1 else "SAFE"
 
-            rules_html = ""
-            if rules_fired:
-                rules_items = "".join(f"<li style='margin-bottom:4px; font-size:0.85rem; opacity:0.85;'>{r}</li>" for r in rules_fired)
-                rules_html = f"<hr style='border:1px solid rgba(128,128,128,0.1); margin: 16px 0;'><div style='font-size:0.8rem; font-weight:600; opacity:0.7; margin-bottom:8px;'>TRIGGERED RULES</div><ul style='margin:0; padding-left:18px; list-style:disc;'>{rules_items}</ul>"
 
             st.markdown(f"""
-                <div class="{card_class}">
+                <div class="{card_class} style="padding-bottom:16px">
                     <h3 style="margin-top:0; color: {color} !important;">{icon} {display_verdict} — {risk_level} RISK</h3>
-                    <p style="opacity:0.8; margin-bottom: 20px;">{reason}</p>
-
-                    <div style="display:flex; justify-content:space-between; margin-bottom: 5px;">
-                        <span style="font-size:0.9rem; font-weight:600;">ML Fraud Probability</span>
+                    <p style="opacity:0.8; margin-bottom: 30px;">{reason}</p>
+                    <div style="display:flex; justify-content:space-between; margin-bottom: 18px;">
+                        <span style="font-size:0.9rem; font-weight:600; color: {chart_font_color};">ML Fraud Probability</span>
                         <span style="font-size:0.9rem; font-weight:600; color:{color};">{confidence:.1f}%</span>
                     </div>
-                    <div class="progress-bg"><div class="progress-fill" style="width: {min(confidence, 100):.1f}%; background: {color};"></div></div>
-
-                    <hr style="border:1px solid rgba(128,128,128,0.1); margin: 20px 0;">
-
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                        <div>
-                            <div style="font-size:0.8rem; opacity:0.7;">Risk Score (Calculated)</div>
-                            <div style="font-size:1.5rem; font-weight:700;">{risk_score}/100</div>
-                        </div>
-                        <div>
-                            <div style="font-size:0.8rem; opacity:0.7;">Recommendation</div>
-                            <div style="font-size:1.1rem; font-weight:600;">{result['recommendation'].replace('_', ' ')}</div>
-                        </div>
-                    </div>
-                    {rules_html}
                 </div>
-            """, unsafe_allow_html=True)
+                """, unsafe_allow_html=True)
+
+            st.markdown(f"""
+                    <div class="progress-bg"><div class="progress-fill" style="width: {min(confidence, 100):.1f}%; background: {color};"></div></div>
+                """, unsafe_allow_html=True)
+
+            st.markdown(f"""
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px;">
+                    <div>
+                        <div style="font-size:0.8rem; opacity:0.7; color: {chart_font_color};">Risk Score (Calculated)</div>
+                        <div style="font-size:1.5rem; font-weight:700; color: {chart_font_color};"">{risk_score}/100</div>
+                    </div>
+                    <div>
+                        <div style="font-size:0.8rem; opacity:0.7; color: {chart_font_color};">Recommendation</div>
+                        <div style="font-size:1.1rem; font-weight:600; color: {chart_font_color};">{result['recommendation'].replace('_', ' ')}</div>
+                    </div>
+                </div>
+                """, unsafe_allow_html=True)
+
+            if rules_fired:
+                rules_items = "".join(f"<li style='margin-bottom:4px; font-size:0.85rem; opacity:0.85;'>{r}</li>" for r in rules_fired)
+                st.markdown(f"""
+                <div style="font-size:0.8rem; font-weight:600; opacity:0.7; margin-bottom:8px; margin-top:20px;">TRIGGERED RULES</div>
+                <ul style='margin:0; padding-left:18px; list-style:disc;'>{rules_items}</ul>
+                """, unsafe_allow_html=True)
+
 
         else:
-            st.markdown("<div style='height: 100%; display: flex; align-items: center; justify-content: center; opacity: 0.5; border: 2px dashed rgba(128,128,128,0.2); border-radius: 16px; padding: 50px; text-align: center;'>Waiting for telemetry input... Enter parameters and click Initialize Inference.</div>", unsafe_allow_html=True)
+            st.markdown(f"<div style='height: 100%; display: flex; align-items: center; justify-content: center; opacity: 0.5; border: 2px dashed rgba(128,128,128,0.2); border-radius: 16px; padding: 50px; text-align: center; color: {chart_font_color};'>Waiting for telemetry input... Enter parameters and click Initialize Inference.</div>", unsafe_allow_html=True)
 
 
 elif "About" in page:

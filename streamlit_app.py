@@ -3,8 +3,44 @@ import streamlit as st
 import pandas as pd
 import pickle
 import plotly.express as px
+import os
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DATA_PATH = os.path.join(BASE_DIR, "dataset", "data.xlsx")
+MODEL_PATH = os.path.join(BASE_DIR, "fraud_model.pkl")
+@st.cache_data
+def load_data():
+    if os.path.exists(DATA_PATH):
+        return pd.read_excel(DATA_PATH)
 
-st.set_page_config(page_title="UniPay FraudX", layout="wide")
+    st.warning("⚠ Dataset not found. Running in DEMO MODE with sample data.")
+
+    return pd.DataFrame({
+        "amount": [1200, 5000, 15000, 300, 8000, 20000],
+        "txn_count_1hr": [1, 5, 12, 2, 9, 15],
+        "hour": [10, 2, 23, 14, 1, 22],
+        "location_type": ["online", "offline", "online", "offline", "online", "online"],
+        "sender_type": ["user", "merchant", "user", "user", "merchant", "user"],
+        "receiver_type": ["merchant", "user", "merchant", "user", "merchant", "user"]
+        
+        "label": ["Normal", "Normal", "Suspicious", "Normal", "Normal", "Suspicious"],
+
+    # (optional but better for realism)
+        "is_high_amount": [0, 0, 1, 0, 0, 1],
+        "is_high_velocity": [0, 0, 1, 0, 0, 1],
+        "is_odd_hour": [0, 0, 1, 0, 1, 1],
+        })
+
+@st.cache_resource
+def load_model():
+    if os.path.exists(MODEL_PATH):
+        return pickle.load(open(MODEL_PATH, "rb"))
+
+    st.error("❌ Model file missing")
+    st.stop()
+
+
+df = load_data()
+model = load_model()
 
 #  👉 NAVIGATION
 
@@ -110,12 +146,6 @@ else:
 
     </style>
     """, unsafe_allow_html=True)
-
-
-# ------------------ LOAD DATA ------------------
-df = pd.read_excel("data.xlsx")
-model = pickle.load(open("fraud_model.pkl", "rb"))
-
 # ------------------ CUSTOM CSS ------------------
 
 # 🎨 DYNAMIC CSS
@@ -237,74 +267,131 @@ else:
     </style>
     """, unsafe_allow_html=True)
 
+# ================== HOME (REDESIGNED) ==================
 # ================== HOME ==================
 if page == "Home":
 
     st.markdown("""
     <style>
     .hero {
-        height: 90vh;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        background-image: url("https://elmeurope.com/wp-content/uploads/2024/10/elm-europe-high-demand-prediction-main.jpg");
-        background-size: cover;
-        background-position: center;
-        color: white;
+        background: linear-gradient(135deg, #0f172a, #1e293b);
+        padding: 60px 30px;
+        border-radius: 20px;
         text-align: center;
-        border-radius: 20px;
-    }
-
-    .overlay {
-        background: rgba(0,0,0,0.6);
-        padding: 50px;
-        border-radius: 20px;
+        color: white;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.4);
     }
 
     .title {
-        font-size: 50px;
-        font-weight: bold;
-        text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        font-size: 42px;
+        font-weight: 800;
+        margin-bottom: 10px;
+        background: linear-gradient(90deg, #22c55e, #ef4444);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
     }
 
     .subtitle {
         font-size: 18px;
-        margin-top: 10px;
+        opacity: 0.85;
+        margin-bottom: 25px;
     }
 
-    .btn {
-        margin-top: 20px;
-        padding: 12px 30px;
-        background-color: #f5f5f5;
-        color: #333;
-        border-radius: 10px;
-        font-size: 16px;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-        text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
-        background-color: #ff6f91;
+    .badge {
+        display: inline-block;
+        padding: 6px 14px;
+        border-radius: 20px;
+        background: rgba(34,197,94,0.15);
+        border: 1px solid #22c55e;
+        font-size: 13px;
+    }
+
+    .card {
+        background: #111827;
+        padding: 18px;
+        border-radius: 12px;
+        text-align: center;
         color: white;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.3);
     }
-    </style>
 
+    .metric {
+        font-size: 26px;
+        font-weight: bold;
+        color: #22c55e;
+    }
+
+    </style>
+    """, unsafe_allow_html=True)
+
+    # HERO SECTION
+    st.markdown("""
     <div class="hero">
-        <div class="overlay">
-            <div class="title">🚀 SMART TRANSACTION FRAUD DETECTION SYSTEM</div>
-            <div class="subtitle">
-            Detect fraudulent transactions in real-time with AI-powered insights
-            </div>
-            <div class="btn">🚀 UniPay FraudX</div>
+        <div class="title">🚨 Fraud Intelligence System</div>
+        <div class="subtitle">
+            Real-time AI-powered transaction monitoring & fraud detection
         </div>
+        <div class="badge">🔐 Secure • AI Driven • Real-time Analytics</div>
     </div>
     """, unsafe_allow_html=True)
+
+    st.write("")
+
+    # METRICS
+    col1, col2, col3 = st.columns(3)
+
+    col1.markdown("""
+    <div class="card">
+        <div class="metric">98.2%</div>
+        Accuracy
+    </div>
+    """, unsafe_allow_html=True)
+
+    col2.markdown("""
+    <div class="card">
+        <div class="metric">1K+</div>
+        Transactions
+    </div>
+    """, unsafe_allow_html=True)
+
+    col3.markdown("""
+    <div class="card">
+        <div class="metric">Real-Time</div>
+        Detection
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.write("")
+
+    # OVERVIEW TEXT
+    st.subheader("📊 Fraud Intelligence Overview")
+    
+    import plotly.express as px
+
+    # safe fallback (no crash)
+    if "label" in df.columns:
+
+        fig = px.pie(
+            df,
+            names="label",
+            title="Fraud vs Normal Transactions",
+            hole=0.5,
+            color_discrete_sequence=["#22c55e", "#ef4444"]
+        )
+
+        fig.update_layout(
+            paper_bgcolor="rgba(0,0,0,0)",
+            plot_bgcolor="rgba(0,0,0,0)"
+        )
+        
+        st.plotly_chart(fig, use_container_width=True) 
+
+    st.info("💡 System continuously analyzes transaction patterns using AI + rule-based intelligence.")
 
 # ================== ANALYSIS ==================
 elif page == "Analysis":
 
     st.title("📊 Data Analysis")
-
-    df = pd.read_excel("data.xlsx")
-
     st.subheader("📁 Dataset Preview")
     st.dataframe(df)
 

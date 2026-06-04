@@ -20,7 +20,7 @@ def load_data():
         "hour": [10, 2, 23, 14, 1, 22],
         "location_type": ["online", "offline", "online", "offline", "online", "online"],
         "sender_type": ["user", "merchant", "user", "user", "merchant", "user"],
-        "receiver_type": ["merchant", "user", "merchant", "user", "merchant", "user"]
+        "receiver_type": ["merchant", "user", "merchant", "user", "merchant", "user"],
         
         "label": ["Normal", "Normal", "Suspicious", "Normal", "Normal", "Suspicious"],
 

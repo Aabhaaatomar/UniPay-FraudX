@@ -113,7 +113,7 @@ else:
 
 
 # ------------------ LOAD DATA ------------------
-df = pd.read_excel("data.xlsx")
+df=pd.read_excel("dataset/data.xlsx")
 model = pickle.load(open("fraud_model.pkl", "rb"))
 
 # ------------------ CUSTOM CSS ------------------
@@ -239,7 +239,7 @@ else:
 
 # ================== HOME ==================
 if page == "Home":
-
+    
     st.markdown("""
     <style>
     .hero {
@@ -297,13 +297,96 @@ if page == "Home":
         </div>
     </div>
     """, unsafe_allow_html=True)
+    st.markdown("<br>", unsafe_allow_html=True)
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+        if st.button("🚀 Start Analysis"):
+            st.info("Navigate to the Analysis page from the menu.")
+
+    with col2:
+        if st.button("📊 View Dashboard"):
+            st.info("Navigate to the Dashboard page from the menu.")
+        
+    st.markdown("---")
+    st.subheader("📊 Key Security Metrics")
+
+    total_txn = len(df)
+    fraud_txn = len(df[df["label"] == "Suspicious"])
+    safe_txn = len(df[df["label"] == "Normal"])
+    fraud_rate = round((fraud_txn / total_txn) * 100, 2) if total_txn else 0
+
+    col1, col2, col3, col4 = st.columns(4)
+
+    with col1:
+        st.metric("Transactions", total_txn)
+
+    with col2:
+        st.metric("Fraud Cases", fraud_txn)
+
+    with col3:
+        st.metric("Safe Cases", safe_txn)
+
+    with col4:
+        st.metric("Fraud Rate", f"{fraud_rate}%")
+        
+    st.markdown("---")
+    st.subheader("📈 Analytics Preview")
+    
+    fraud_count = df["label"].value_counts().sort_index()
+    fig_home = px.pie(
+    values=fraud_count.values,
+    names=["Normal", "Fraud"],
+    hole=0.5,
+    title="Fraud vs Normal Transactions"
+    )
+    fig_home.update_traces(
+    marker=dict(colors=["#28a745", "#dc3545"])
+    )
+    risk_data = df["label"].value_counts().reset_index()
+    risk_data.columns = ["Type", "Count"]
+    
+    fig_risk = px.bar(
+    risk_data,
+    x="Type",
+    y="Count",
+    title="Risk Distribution"
+    )
+    fig_risk.update_traces(
+    marker_color="#ff6f91"
+    )
+    
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        st.plotly_chart(fig_home, use_container_width=True)
+        
+    with col2:
+        st.plotly_chart(fig_risk, use_container_width=True)    
+        
+    st.markdown("---")
+    st.subheader("🛡 Why UniPay FraudX?")
+    
+    col1, col2, col3 = st.columns(3)
+    
+    with col1:
+        st.info("⚡ Real-Time Fraud Detection")
+        
+    with col2:
+        st.info("🤖 AI Powered Analytics")
+    with col3:
+        st.info("🔒 Secure Transaction Monitoring")    
+        
+    st.markdown("---")
+    st.caption("© 2026 UniPay FraudX | AI-Powered Fraud Intelligence")
 
 # ================== ANALYSIS ==================
 elif page == "Analysis":
 
     st.title("📊 Data Analysis")
 
-    df = pd.read_excel("data.xlsx")
+    df = pd.read_excel("dataset/data.xlsx")
 
     st.subheader("📁 Dataset Preview")
     st.dataframe(df)

@@ -113,9 +113,29 @@ else:
 
 
 # ------------------ LOAD DATA ------------------
-df = pd.read_excel("data.xlsx")
-model = pickle.load(open("fraud_model.pkl", "rb"))
+import os
 
+try:
+    # Dataset
+    if os.path.exists("data.xlsx"):
+        df = pd.read_excel("data.xlsx")
+    else:
+        st.warning("Dataset file not found. Analytics features may be unavailable.")
+        df = None
+
+    # Model
+    MODEL_PATH = os.path.join("models", "fraud_model.pkl")
+
+    if not os.path.exists(MODEL_PATH):
+        st.error("Model file not found.")
+        st.stop()
+
+    with open(MODEL_PATH, "rb") as f:
+        model = pickle.load(f)
+
+except Exception as e:
+    st.error(f"Error loading application resources: {e}")
+    st.stop()
 # ------------------ CUSTOM CSS ------------------
 
 # 🎨 DYNAMIC CSS
@@ -299,103 +319,117 @@ if page == "Home":
     """, unsafe_allow_html=True)
 
 # ================== ANALYSIS ==================
+# ================== ANALYSIS ==================
 elif page == "Analysis":
 
     st.title("📊 Data Analysis")
 
-    df = pd.read_excel("data.xlsx")
+    if df is None:
+        st.warning("Dataset unavailable. Analysis features cannot be displayed.")
+    else:
 
-    st.subheader("📁 Dataset Preview")
-    st.dataframe(df)
+        st.subheader("📁 Dataset Preview")
+        st.dataframe(df)
 
-    st.subheader("📌 Basic Info")
-    st.write(df.describe())
+        st.subheader("📌 Basic Info")
+        st.write(df.describe())
 
-    # Tabs
-    tab1, tab2 = st.tabs(["Charts", "Insights"])
+        # Tabs
+        tab1, tab2 = st.tabs(["Charts", "Insights"])
 
-    with tab1:
-        st.subheader("📊 Charts")
+        with tab1:
+            st.subheader("📊 Charts")
 
-        fig1 = px.histogram(df, x="amount", color="label")
-        fig1.update_traces(
-            marker_line_width=1.5,
-            marker_line_color="black")
-        st.plotly_chart(fig1, use_container_width=True)
+            fig1 = px.histogram(df, x="amount", color="label")
+            fig1.update_traces(
+                marker_line_width=1.5,
+                marker_line_color="black"
+            )
+            st.plotly_chart(fig1, use_container_width=True)
 
-        fig2 = px.scatter(df, x="amount", y="txn_count_1hr", color="label")
-        st.plotly_chart(fig2, use_container_width=True)
+            fig2 = px.scatter(
+                df,
+                x="amount",
+                y="txn_count_1hr",
+                color="label"
+            )
+            st.plotly_chart(fig2, use_container_width=True)
 
-    with tab2:
-        st.subheader("💡 Insights")
-        
-        st.markdown("""
-                    🔍 **Key Observations:**
-                    
-                    • Transactions with **higher amounts and frequent activity** show a strong pattern of suspicious behavior.
-                    
-                    • **Late-night transactions (0–6 hours)** are more likely to be flagged as risky.
-                    
-                    • Users with **high transaction counts within short time** may indicate fraud attempts.
-                    
-                    • Normal transactions are generally **low frequency and moderate amount**.
-                    
-                    💡 **Conclusion:**  
-                    
-                    Combining transaction amount, frequency, and timing significantly improves fraud detection accuracy.
-                    """)
+        with tab2:
+            st.subheader("💡 Insights")
 
+            st.markdown("""
+            🔍 **Key Observations:**
+
+            • Transactions with **higher amounts and frequent activity** show a strong pattern of suspicious behavior.
+
+            • **Late-night transactions (0–6 hours)** are more likely to be flagged as risky.
+
+            • Users with **high transaction counts within short time** may indicate fraud attempts.
+
+            • Normal transactions are generally **low frequency and moderate amount**.
+
+            💡 **Conclusion:**
+
+            Combining transaction amount, frequency, and timing significantly improves fraud detection accuracy.
+            """)
 # ================== DASHBOARD ==================
 elif page == "Dashboard":
 
     st.title("📊 Transaction Analysis Dashboard")
-    fig_bar = px.bar(
+    if df is None:
+        st.warning("Dataset unavailable. Dashboard features cannot be displayed.")
+        st.stop()
+    else:
+
+        fig_bar = px.bar(
             df,
             x="hour",
             y="txn_count_1hr",
             color="label",
-            title=" 🕒 Transactions by Hour"
-            )
-    fig_bar.update_traces(marker_line_color='black', marker_line_width=1)
-    fig_bar.update_layout(plot_bgcolor="#f5f5f5")
+            title="🕒 Transactions by Hour"
+        )
+   
+        fig_bar.update_traces(marker_line_color='black', marker_line_width=1)
+        fig_bar.update_layout(plot_bgcolor="#f5f5f5")
     
     
-    df_line = df.groupby("hour")["amount"].mean().reset_index()
-    fig_line= px.line(df_line,
+        df_line = df.groupby("hour")["amount"].mean().reset_index()
+        fig_line= px.line(df_line,
                       x="hour",
                       y="amount",
                       title=" 📈 Amount Trend Over Time")
-    fig_line.update_traces(mode="markers+lines", marker=dict(size=8, color="#ff6f91"))
-    fig_line.update_layout(plot_bgcolor="#f5f5f5")
+        fig_line.update_traces(mode="markers+lines", marker=dict(size=8, color="#ff6f91"))
+        fig_line.update_layout(plot_bgcolor="#f5f5f5")
         
-    fraud_count = df["label"].value_counts()
-    fig_donut = px.pie(
+        fraud_count = df["label"].value_counts()
+        fig_donut = px.pie(
             values=fraud_count.values,
             names=["Normal", "Fraud"],
             hole=0.5,
             title=" 📊 Fraud vs Normal")
-    fig_donut.update_layout(annotations=[dict(text='Transaction<br>Split', x=0.5, y=0.5, font_size=22, showarrow=False, font = dict(size=20, color="#ff4b8b"))])
-    fig_donut.update_layout(plot_bgcolor="#f5f5f5")
+        fig_donut.update_layout(annotations=[dict(text='Transaction<br>Split', x=0.5, y=0.5, font_size=22, showarrow=False, font = dict(size=20, color="#ff4b8b"))])
+        fig_donut.update_layout(plot_bgcolor="#f5f5f5")
     
-    fig_location = px.pie(df,
+        fig_location = px.pie(df,
                      names="location_type",
                      title=" 📍 Transaction by Location")
-    fig_location.update_layout(plot_bgcolor="#f5f5f5")
+        fig_location.update_layout(plot_bgcolor="#f5f5f5")
         
-    fig_sender = px.bar(
+        fig_sender = px.bar(
             df,
             x="sender_type",
             color="receiver_type",
             title=" 📊 Sender vs Receiver Comparison",
             barmode="group")
-    fig_sender.update_layout(plot_bgcolor="#f5f5f5")
+        fig_sender.update_layout(plot_bgcolor="#f5f5f5")
         
-    fig_box = px.box(
+        fig_box = px.box(
             df,
             x="label",
             y="amount",
             title=" 📈 Amount Distribution (Fraud vs Normal)")
-    fig_box.update_layout(plot_bgcolor="#f5f5f5")
+        fig_box.update_layout(plot_bgcolor="#f5f5f5")
     
     # ------------------ LAYOUT ------------------
 

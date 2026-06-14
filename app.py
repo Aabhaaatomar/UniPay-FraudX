@@ -61,13 +61,14 @@ def load_data():
     dataset_path = os.path.join(BASE_DIR, "dataset", "data.xlsx")
 
     if not os.path.exists(dataset_path):
+
         st.warning("⚠️ Dataset not found. Running in demo mode.")
+
         return pd.DataFrame()
 
     try:
         return pd.read_excel(dataset_path)
-    except Exception as e:
-        st.error(f"Error reading dataset: {e}")
+    except Exception:
         return pd.DataFrame()
 
 
@@ -75,13 +76,17 @@ def load_data():
 def load_model():
     model_path = os.path.join(BASE_DIR, "models", "fraud_model.pkl")
     if not os.path.exists(model_path):
-        st.error(f"Model not found at {model_path}. Please train or place the model file.")
         return None
     try:
+
         with open(model_path, "rb") as f:
             return pickle.load(f)
     except Exception as e:
         st.error(f"Error loading model: {e}")
+
+        return pickle.load(open(model_path, "rb"))
+    except Exception:
+
         return None
 
 
@@ -93,6 +98,47 @@ if df.empty:
 
 if model is None:
     st.warning("⚠️ Model missing - prediction disabled")
+
+if df.empty or model is None:
+    st.markdown("""
+        <div style='
+            background: linear-gradient(145deg, rgba(255,30,86,0.08), rgba(255,75,139,0.04));
+            border-left: 6px solid #ff1e56;
+            border-radius: 12px;
+            padding: 28px 32px;
+            margin: 40px auto;
+            max-width: 720px;
+        '>
+            <h2 style='color:#ff1e56; margin-top:0;'>⚠️ Setup Required</h2>
+            <p style='opacity:0.85; line-height:1.8;'>
+                UniPay FraudX could not start because one or more required files
+                are missing. Please follow the steps below to resolve this.
+            </p>
+        </div>
+    """, unsafe_allow_html=True)
+
+    if df.empty:
+        st.error(
+            "**Missing: Dataset file**\n\n"
+            "Expected at: `dataset/data.xlsx`\n\n"
+            "Ensure the Excel dataset exists in the `dataset/` folder "
+            "before starting the application."
+        )
+
+    if model is None:
+        st.error(
+            "**Missing: ML Model file**\n\n"
+            "Expected at: `models/fraud_model.pkl`\n\n"
+            "Run the following command from the project root to generate it:\n"
+            "```bash\npython fraud_model.py\n```"
+        )
+
+    st.info(
+        "📖 For full setup instructions, refer to the "
+        "[README](https://github.com/Aabhaaatomar/UniPay-FraudX#️-installation)."
+    )
+    st.stop()
+
 
 # ================== NAVIGATION & SIDEBAR ==================
 st.sidebar.markdown(

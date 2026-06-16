@@ -1,8 +1,8 @@
-from click import style
 import streamlit as st
 import pandas as pd
 import pickle
 import plotly.express as px
+from models.prediction_engine import PredictionEngine
 
 st.set_page_config(page_title="UniPay FraudX", layout="wide")
 
@@ -115,6 +115,7 @@ else:
 # ------------------ LOAD DATA ------------------
 df = pd.read_excel("data.xlsx")
 model = pickle.load(open("fraud_model.pkl", "rb"))
+engine = PredictionEngine(model)
 
 # ------------------ CUSTOM CSS ------------------
 
@@ -418,138 +419,81 @@ elif page == "Prediction":
 
     st.title("🔮 Predict Transaction")
 
-    amount = st.number_input("Amount")
-    txn = st.number_input("Txn Count")
-    hour = st.slider("Hour", 0, 23)
+    amount = st.number_input(
+        "Amount",
+        min_value=0.0,
+        value=1000.0
+    )
+
+    txn = st.number_input(
+        "Txn Count",
+        min_value=0,
+        value=1
+    )
+
+    hour = st.slider(
+        "Hour",
+        0,
+        23,
+        12
+    )
 
     if st.button("Predict"):
-        if amount > 10000:
-            pred = 1
-            reason = "High transaction amount"
 
-        elif txn > 10:
-            pred = 1
-            reason = "Too many transactions"
-
-        elif 0<= hour <= 5 and amount > 4000:
-            pred = 1
-            reason = "Late night transaction"
-        
-        else:
-            pred = model.predict([[amount, txn, hour]])[0]
-            reason = "Based on ML model"
-            
-        # Confidence calculation
-        proba = model.predict_proba([[amount, txn, hour]])[0]
-        confidence = max(proba) * 100
-        
-        # RISK SCORE CALCULATION
-        risk_score = 0
-        
-        if amount > 10000:
-            risk_score += 50
-        if txn > 10:
-            risk_score += 30
-        if 0<= hour <= 5 and amount > 4000:
-            risk_score += 20
-        
-        if risk_score > 70:
-            pred = 1
-            reason = "High risk score based on rules"
-        elif risk_score > 40:
-            pred = 1
-            reason = "Moderate risk score based on rules"
-        elif risk_score > 0:
-            pred = 1
-            reason = "Low risk score based on rules"
-        if risk_score > 70:
-            risk_level = "HIGH"
-            risk_color = "#ef4444"
-            risk_message = "High probability of fraudulent activity."
-
-        elif risk_score > 40:
-            risk_level = "MEDIUM"
-            risk_color = "#f59e0b"
-            risk_message = "Potentially suspicious transaction."
-
-        else:
-            risk_level = "LOW"
-            risk_color = "#22c55e"
-            risk_message = "Transaction appears safe."
-        
-        st.markdown(
-            f"""
-            <div style="
-                display:inline-block;
-                padding:8px 16px;
-                border-radius:999px;
-                background:{risk_color};
-                color:white;
-                font-weight:bold;
-                margin-bottom:10px;">
-                {risk_level} RISK
-            </div>
-            """,
-            unsafe_allow_html=True
+        result = engine.predict(
+            amount,
+            txn,
+            hour
         )
 
-        st.progress(confidence / 100)
-        st.caption(f"{confidence:.2f}% confidence")
+        if not result["success"]:
 
-        if pred == 1:
-            st.markdown(f"""
-                        <div style="
-                        background: linear-gradient(135deg, #ff4b8b, #ff1e56);
-                        padding: 25px;
-                        border-radius: 15px;
-                        color: white;
-                        text-align: left;
-                        font-size: 18px;
-                        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-                        ">
-                        🚨 <b>Suspicious Transaction Detected</b><br><br>
-                        💰 Amount: {amount}<br>
-                        🔁 Transactions: {txn}<br>
-                        ⏰ Hour: {hour}<br>
-                        📊 Confidence: {confidence:.2f}%<br><br>
-                        📈 Risk Score: {risk_score}<br><br>
-                        ⚠️ Risk Level: {risk_level}<br>
-                        📝 Risk Insight: {risk_message}<br>
-                        📋 Reason: {reason}<br>
-                        ⚠️ <b>Recommendation:</b><br>
-                        • Verify transaction immediately<br>
-                        • Enable OTP or 2FA authentication<br>
-                        • Monitor account activity closely
-                        </div>
-                        """, unsafe_allow_html=True)
+            for error in result["errors"]:
+                st.error(error)
+
         else:
-            st.markdown(f"""
-            <div style="
-            background: linear-gradient(135deg, #36cfc9, #00b894);
-            padding: 25px;
-            border-radius: 15px;
-            color: white;
-            text-align: left;
-            font-size: 18px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-        ">
-        ✅ <b>Normal Transaction</b><br><br>
 
-        💰 Amount: {amount}<br>
-        🔁 Transactions: {txn}<br>
-        ⏰ Hour: {hour}<br>
-        📊 Confidence: {confidence:.2f}%<br><br>
-        📈 Risk Score: {risk_score}<br><br>
-        ⚠️ Risk Level: {risk_level}<br>
-        📝 Risk Insight: {risk_message}<br>
-        📋 Reason: {reason}<br><br>
+            confidence = result["confidence"]
+            risk_score = result["risk_score"]
+            risk_level = result["risk_level"]
 
-        👍 <b>Recommendation:</b><br>
-        • Transaction appears safe<br>
-        • No immediate action required<br>
-        • Continue normal usage
-        </div>
-        """, unsafe_allow_html=True)
+            st.progress(confidence / 100)
+
+            c1, c2 = st.columns(2)
+            with c1:
+                st.metric(
+                    "Confidence",
+                    f"{confidence:.2f}%"
+                    )
+                st.metric(
+                    "Risk Score",
+                    risk_score
+                    )
+
+            with c2:
+                st.metric(
+                    "Risk Level",
+                    risk_level
+                    )
+
+                st.metric(
+                    "Recommendation",
+                    result["recommendation"]
+                    )
+
+            st.subheader("Reasons")
+
+            for reason in result["reasons"]:
+                st.write(f"• {reason}")
+
+            if result["prediction"]:
+                st.error(
+                    "🚨 Suspicious Transaction"
+                )
+            else:
+                st.success(
+                    "✅ Normal Transaction"
+                )
     
 
     

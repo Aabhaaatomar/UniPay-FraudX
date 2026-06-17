@@ -54,7 +54,7 @@ if theme == "Dark":
 
     /* Button */
     .stButton > button {
-        background: linear-gradient(90deg, #ff4b8b, #ff6b6b);
+        background: linear-gradient(90deg,#22c55e,#16a34a);
         color: white;
         border-radius: 10px;
         padding: 10px 20px;
@@ -65,7 +65,7 @@ if theme == "Dark":
 
     .stButton > button:hover {
         transform: scale(1.05);
-        background: linear-gradient(90deg, #ff6b6b, #ff4b8b);
+        background: linear-gradient(90deg, #16a34a, #22c55e);
     }
 
     </style>
@@ -94,7 +94,7 @@ else:
 
     /* Button */
     .stButton > button {
-        background: linear-gradient(90deg, #ff4b8b, #ff6b6b);
+        background: linear-gradient(90deg,#22c55e,#16a34a);
         color: white;
         border-radius: 10px;
         padding: 10px 20px;
@@ -105,7 +105,7 @@ else:
 
     .stButton > button:hover {
         transform: scale(1.05);
-        background: linear-gradient(90deg, #ff6b6b, #ff4b8b);
+        background: linear-gradient(90deg, #22c55e,#16a34a);
     }
 
     </style>
@@ -158,7 +158,7 @@ if theme == "Dark":
                 /* BUTTON */
                 
                 .stButton > button {
-        background: linear-gradient(90deg, #ff4b8b, #ff6b6b);
+        background: linear-gradient(90deg,#22c55e,#16a34a);
         color: white;
         border-radius: 10px;
         padding: 10px 20px;
@@ -168,7 +168,7 @@ if theme == "Dark":
     }
                 .stButton > button:hover {
                     transform: scale(1.05);
-                    background: linear-gradient(90deg, #ff6b6b, #ff4b8b);
+                    background: linear-gradient(90deg,#22c55e,#16a34a);
                     }
                 /* FULL WIDTH */
                 .block-container {
@@ -215,7 +215,7 @@ else:
     }
 
     .stButton > button {
-        background: linear-gradient(90deg, #ff4b8b, #ff6b6b);
+        background: linear-gradient(90deg,#22c55e,#16a34a);
         color: white;
         border-radius: 10px;
         padding: 10px 20px;
@@ -226,7 +226,7 @@ else:
 
     .stButton > button:hover {
         transform: scale(1.05);
-        background: linear-gradient(90deg, #ff6b6b, #ff4b8b);
+        background: linear-gradient(90deg,#22c55e,#16a34a);
     }
 
     .block-container {
@@ -282,7 +282,7 @@ if page == "Home":
         font-size: 16px;
         box-shadow: 0 4px 15px rgba(0,0,0,0.2);
         text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
-        background-color: #ff6f91;
+        background-color: #22c55e;
         color: white;
     }
     </style>
@@ -332,8 +332,7 @@ if page == "Home":
         st.metric("Fraud Rate", f"{fraud_rate}%")
         
     st.markdown("---")
-    st.subheader("📈 Analytics Preview")
-    
+    st.subheader("📈 Fraud Intelligence Analytics")    
     fraud_count = df["label"].value_counts().sort_index()
     fig_home = px.pie(
     values=fraud_count.values,
@@ -354,7 +353,7 @@ if page == "Home":
     title="Risk Distribution"
     )
     fig_risk.update_traces(
-    marker_color="#ff6f91"
+    marker_color="#22c55e"
     )
     
     col1, col2 = st.columns(2)
@@ -371,12 +370,11 @@ if page == "Home":
     col1, col2, col3 = st.columns(3)
     
     with col1:
-        st.info("⚡ Real-Time Fraud Detection")
-        
+        st.success("⚡ Real-Time Fraud Detection")
     with col2:
-        st.info("🤖 AI Powered Analytics")
+        st.warning("🤖 AI Risk Analysis")
     with col3:
-        st.info("🔒 Secure Transaction Monitoring")    
+        st.error("🚨 Fraud Intelligence Monitoring") 
         
     st.markdown("---")
     st.caption("© 2026 UniPay FraudX | AI-Powered Fraud Intelligence")
@@ -448,7 +446,7 @@ elif page == "Dashboard":
                       x="hour",
                       y="amount",
                       title=" 📈 Amount Trend Over Time")
-    fig_line.update_traces(mode="markers+lines", marker=dict(size=8, color="#ff6f91"))
+    fig_line.update_traces(mode="markers+lines", marker=dict(size=8, color="#22c55e"))
     fig_line.update_layout(plot_bgcolor="#f5f5f5")
         
     fraud_count = df["label"].value_counts()
@@ -457,7 +455,7 @@ elif page == "Dashboard":
             names=["Normal", "Fraud"],
             hole=0.5,
             title=" 📊 Fraud vs Normal")
-    fig_donut.update_layout(annotations=[dict(text='Transaction<br>Split', x=0.5, y=0.5, font_size=22, showarrow=False, font = dict(size=20, color="#ff4b8b"))])
+    fig_donut.update_layout(annotations=[dict(text='Transaction<br>Split', x=0.5, y=0.5, font_size=22, showarrow=False, font = dict(size=20, color="#22c55e"))])
     fig_donut.update_layout(plot_bgcolor="#f5f5f5")
     
     fig_location = px.pie(df,
@@ -582,7 +580,7 @@ elif page == "Prediction":
         if pred == 1:
             st.markdown(f"""
                         <div style="
-                        background: linear-gradient(135deg, #ff4b8b, #ff1e56);
+                        background: linear-gradient(135deg, #dc2626, #ef4444);
                         padding: 25px;
                         border-radius: 15px;
                         color: white;
@@ -608,7 +606,7 @@ elif page == "Prediction":
         else:
             st.markdown(f"""
             <div style="
-            background: linear-gradient(135deg, #36cfc9, #00b894);
+            background: linear-gradient(135deg, #22c55e, #16a34a);
             padding: 25px;
             border-radius: 15px;
             color: white;

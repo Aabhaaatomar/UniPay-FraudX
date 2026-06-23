@@ -113,10 +113,13 @@ else:
 
 
 # ------------------ LOAD DATA ------------------
-df=pd.read_excel("dataset/data.xlsx")
-model = pickle.load(open("fraud_model.pkl", "rb"))
-engine = PredictionEngine(model)
+df = pd.read_excel("dataset/data.xlsx")
 
+model = pickle.load(
+    open("models/fraud_model.pkl", "rb")
+)
+
+engine = PredictionEngine(model)
 # ------------------ CUSTOM CSS ------------------
 
 # 🎨 DYNAMIC CSS
@@ -428,72 +431,246 @@ elif page == "Analysis":
                     """)
 
 # ================== DASHBOARD ==================
+
+
 elif page == "Dashboard":
 
     st.title("📊 Transaction Analysis Dashboard")
+
+       # -------- FILTERS --------
+
+    st.sidebar.subheader("🔎 Dashboard Filters")
+
+    status_filter = st.sidebar.multiselect(
+        "Select Transaction Type",
+        df["label"].unique(),
+        default=df["label"].unique()
+    )
+
+
+    filtered_df = df[
+        df["label"].isin(status_filter)
+    ]
+
+
+    # KPI CARDS
+
+
+    total_txn = len(filtered_df)
+
+    fraud_txn = len(
+        filtered_df[
+            filtered_df["label"]=="Suspicious"
+        ]
+    )
+
+
+    normal_txn = len(
+        filtered_df[
+            filtered_df["label"]=="Normal"
+        ]
+    )
+
+
+    fraud_rate = round(
+        (fraud_txn/total_txn)*100,
+        2
+    ) if total_txn else 0
+
+
+
+    c1,c2,c3,c4 = st.columns(4)
+
+
+    with c1:
+        st.metric(
+            "Total Transactions",
+            total_txn
+        )
+
+
+    with c2:
+        st.metric(
+            "Fraud Detected",
+            fraud_txn
+        )
+
+
+    with c3:
+        st.metric(
+            "Normal Transactions",
+            normal_txn
+        )
+
+
+    with c4:
+        st.metric(
+            "Fraud Rate",
+            f"{fraud_rate}%"
+        )
+
+
+
+    st.divider()
+
+
+
+    # CHART 1
+
     fig_bar = px.bar(
-            df,
-            x="hour",
-            y="txn_count_1hr",
-            color="label",
-            title=" 🕒 Transactions by Hour"
-            )
-    fig_bar.update_traces(marker_line_color='black', marker_line_width=1)
-    fig_bar.update_layout(plot_bgcolor="#f5f5f5")
-    
-    
-    df_line = df.groupby("hour")["amount"].mean().reset_index()
-    fig_line= px.line(df_line,
-                      x="hour",
-                      y="amount",
-                      title=" 📈 Amount Trend Over Time")
-    fig_line.update_traces(mode="markers+lines", marker=dict(size=8, color="#22c55e"))
-    fig_line.update_layout(plot_bgcolor="#f5f5f5")
-        
-    fraud_count = df["label"].value_counts()
-    fig_donut = px.pie(
-            values=fraud_count.values,
-            names=["Normal", "Fraud"],
-            hole=0.5,
-            title=" 📊 Fraud vs Normal")
-    fig_donut.update_layout(annotations=[dict(text='Transaction<br>Split', x=0.5, y=0.5, font_size=22, showarrow=False, font = dict(size=20, color="#22c55e"))])
-    fig_donut.update_layout(plot_bgcolor="#f5f5f5")
-    
-    fig_location = px.pie(df,
-                     names="location_type",
-                     title=" 📍 Transaction by Location")
-    fig_location.update_layout(plot_bgcolor="#f5f5f5")
-        
-    fig_sender = px.bar(
-            df,
-            x="sender_type",
-            color="receiver_type",
-            title=" 📊 Sender vs Receiver Comparison",
-            barmode="group")
-    fig_sender.update_layout(plot_bgcolor="#f5f5f5")
-        
-    fig_box = px.box(
-            df,
-            x="label",
-            y="amount",
-            title=" 📈 Amount Distribution (Fraud vs Normal)")
-    fig_box.update_layout(plot_bgcolor="#f5f5f5")
-    
-    # ------------------ LAYOUT ------------------
+        filtered_df,
+        x="hour",
+        y="txn_count_1hr",
+        color="label",
+        title="🕒 Transactions By Hour"
+    )
 
-    col1, col2 = st.columns(2)
+
+
+    # CHART 2
+
+
+    amount_trend = (
+        filtered_df
+        .groupby("hour")
+        ["amount"]
+        .mean()
+        .reset_index()
+    )
+
+
+    fig_line = px.line(
+        amount_trend,
+        x="hour",
+        y="amount",
+        markers=True,
+        title="📈 Amount Trend"
+    )
+
+
+
+    # CHART 3
+
+
+    fraud_data = (
+        filtered_df["label"]
+        .value_counts()
+    )
+
+
+    fig_pie = px.pie(
+        values=fraud_data.values,
+        names=fraud_data.index,
+        hole=0.5,
+        title="🚨 Fraud Distribution"
+    )
+
+
+
+    # CHART 4
+
+
+    fig_location = px.pie(
+        filtered_df,
+        names="location_type",
+        title="📍 Location Analysis"
+    )
+
+
+
+    # DISPLAY
+
+
+    col1,col2 = st.columns(2)
+
+
     with col1:
-        st.plotly_chart(fig_bar, use_container_width=True)
+        st.plotly_chart(
+            fig_bar,
+            use_container_width=True
+        )
+
+
     with col2:
-        st.plotly_chart(fig_line, use_container_width=True)
+        st.plotly_chart(
+            fig_line,
+            use_container_width=True
+        )
 
-    st.plotly_chart(fig_donut, use_container_width=True, key="donut chart")
 
-    col3, col4 = st.columns(2)
-    with col3:
-        st.plotly_chart(fig_location, use_container_width=True)
-    with col4:
-        st.plotly_chart(fig_sender, use_container_width=True)
+
+    st.plotly_chart(
+        fig_pie,
+        use_container_width=True
+    )
+
+
+
+    st.plotly_chart(
+        fig_location,
+        use_container_width=True
+    )
+
+    # -------- FRAUD TREND --------
+
+
+    st.subheader("🚨 Fraud Trend Analysis")
+
+
+    fraud_trend = (
+        filtered_df[
+            filtered_df["label"] == "Suspicious"
+        ]
+        .groupby("hour")
+        .size()
+        .reset_index(
+            name="fraud_count"
+        )
+    )
+
+
+    fig_trend = px.line(
+        fraud_trend,
+        x="hour",
+        y="fraud_count",
+        markers=True,
+        title="Fraud Transactions by Hour"
+    )
+
+
+    st.plotly_chart(
+        fig_trend,
+        use_container_width=True
+    )
+
+
+    # INSIGHTS
+
+
+    st.subheader(
+        "🧠 Fraud Intelligence Insights"
+    )
+
+
+    if fraud_rate > 40:
+
+        st.error(
+            "High fraud activity detected"
+        )
+
+
+    elif fraud_rate > 20:
+
+        st.warning(
+            "Moderate fraud risk detected"
+        )
+
+
+    else:
+
+        st.success(
+            "Transaction behaviour looks normal"
+        )
 
 # ================== PREDICTION ==================
 elif page == "Prediction":
